@@ -1,0 +1,233 @@
+openapi: 3.0.0
+info:
+  description: |
+    This is a Property API.
+  version: "1.0.0"
+  title: PSE Book Property API
+  contact:
+    email: apiteam@psebook.com
+servers:
+  - url: 'http://psebook-env.eba-rsbujxjh.ap-south-1.elasticbeanstalk.com/api/v1'
+paths:
+  /property:
+    post:
+      summary: Add a new property
+      operationId: createProperty
+      parameters:
+        - in: header
+          name: auth-token
+          schema:
+            type: string
+            format: uuid
+          required: true
+      responses:
+        '405':
+          description: Invalid input
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        $ref: '#/components/requestBodies/Property'
+    put:
+      summary: Update an existing Property
+      operationId: updateProperty
+      responses:
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Property not found
+        '405':
+          description: Validation exception
+      requestBody:
+        $ref: '#/components/requestBodies/Property'
+  '/pet/{propertyId}':
+    get:
+      summary: Find Property by ID
+      description: Returns a single property
+      operationId: getPropertyById
+      parameters:
+        - name: propertyId
+          in: path
+          description: ID of pet to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Property'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Property not found
+  '/pet/{propertyId}/uploadImage':
+    post:
+      summary: uploads an image
+      operationId: uploadFile
+      parameters:
+        - name: propertyId
+          in: path
+          description: ID of property to update
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+components:
+  schemas:
+    Property:
+      type: object
+      required:
+        - name
+        - photoUrls
+      properties:
+        id:
+          type: integer
+          format: int64
+        propertyLocation:
+          type: string
+          minLength: 5
+          maxLength: 200
+          pattern: '^[A-Za-z0-9.'',]*$'
+        lat:
+          type: number
+          format: float
+        lng:
+          type: number
+          format: float
+        societyName:
+          type: string
+          minLength: 5
+          maxLength: 200
+          pattern: '^[A-Za-z0-9.'',]*$'
+        subTypeOfProperty:
+          type: string
+          enum:
+            - Apartment
+            - Studio Apartment
+            - Independent House
+            - Penthouse
+            - Villa
+        noOfBedrooms:
+          type: string
+          pattern: '^[1-6]{1}[+]?$'
+        noOfBalconies:
+          type: string
+          pattern: '^[0-5]{1}[+]?$'
+        noOfBathrooms:
+          type: string
+          pattern: '^[1-5]{1}[+]?$'
+        floorNo:
+          type: number
+          format: int32
+          minimum: 1
+          maximum: 150
+        totalFloors:
+          type: number
+          format: int32
+          minimum: 1
+          maximum: 150
+        noOfCoveredParking:
+          type: string
+          pattern: '^[0-5]{1}[+]?$'
+        noOfOpenParking:
+          type: string
+          pattern: '^[0-5]{1}[+]?$'
+        monthlyRent:
+          type: number
+          format: int32
+          minimum: 1000
+          maximum: 100000000
+        securityAmount:
+          type: number
+          format: int32
+          minimum: 1
+          maximum: 100000000
+        maintenanceCharges:
+          type: number
+          format: int32
+          minimum: 0
+          maximum: 1000000
+        carpetArea:
+          type: number
+          format: int32
+          minimum: 10
+          maximum: 1000000
+        preferredTenantType:
+          type: string
+          enum:
+            - Family
+            - Bachelors
+            - Both
+        furnishingStatus:
+          type: string
+          enum:
+            - Furnished
+            - Semi-Furnished
+            - UnFurnished
+        furnishingDetails:
+          type: array
+          items:
+            type: string
+            enum:
+              - Air conditioner
+              - Gas pipeline
+              - Power Backup
+              - Fridge
+              - Washing Machine
+              - Sofa
+              - Beds
+              - TV
+              - Microwave
+              - Dinning Table
+        amenities:
+          type: array
+          items:
+            type: string
+            enum:
+              - Lift
+              - Gym
+              - Garden
+              - Club House
+              - Swimming Pool
+              - Jogging Track
+              - Security
+              - CCTV Camera
+              - Wi-Fi Connectivity
+              - Intercom
+    ApiResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        type:
+          type: string
+        message:
+          type: string
+  requestBodies:
+    Property:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Property'
+      description: Property object that needs to be added to the store
+      required: true
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
